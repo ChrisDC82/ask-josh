@@ -32,13 +32,15 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (inputValue.trim() === "") return;
+
+    const userMessageText = inputValue.trim();
 
     // Store user message in chat history
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: inputValue,
+      text: userMessageText,
       sender: "user",
       timestamp: new Date(),
     };
@@ -47,17 +49,42 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
 
-    // Mock Josh reply - append to chat history after a short delay
-    setTimeout(() => {
+    // Send message to API and get Josh's reply
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: userMessageText }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get response");
+      }
+
+      const data = await response.json();
+
+      // Display the API reply as Josh's response
       const joshMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Hi, I'm Josh! How can I help you today?",
+        text: data.reply,
         sender: "josh",
         timestamp: new Date(),
       };
+
       // Append Josh's reply to chat history
       setMessages((prev) => [...prev, joshMessage]);
-    }, 1000);
+    } catch (error) {
+      // Handle error - show error message as Josh's reply
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "Sorry, I'm having trouble connecting. Please try again.",
+        sender: "josh",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
