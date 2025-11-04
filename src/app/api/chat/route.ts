@@ -28,21 +28,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call OpenAI API with GPT-4
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are Josh, a friendly virtual assistant for a property maintenance company. Only answer questions about services like power washing, painting, tree cutting, lawn care, or maintenance scheduling.",
-        },
-        {
-          role: "user",
-          content: message,
-        },
-      ],
-    });
+    // Call OpenAI API with GPT-4, fallback to GPT-3.5-turbo if unavailable
+    let completion;
+    try {
+      completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are Josh, a friendly virtual assistant for a property maintenance company. Only answer questions about services like power washing, painting, tree cutting, lawn care, or maintenance scheduling.",
+          },
+          {
+            role: "user",
+            content: message,
+          },
+        ],
+      });
+    } catch (gpt4Error: any) {
+      // If GPT-4 fails (e.g., not available), try GPT-3.5-turbo
+      console.log("GPT-4 unavailable, falling back to GPT-3.5-turbo:", gpt4Error?.message);
+      completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are Josh, a friendly virtual assistant for a property maintenance company. Only answer questions about services like power washing, painting, tree cutting, lawn care, or maintenance scheduling.",
+          },
+          {
+            role: "user",
+            content: message,
+          },
+        ],
+      });
+    }
 
     // Extract the AI-generated reply
     const reply = completion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
