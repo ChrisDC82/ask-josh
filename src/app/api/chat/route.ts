@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -16,16 +21,12 @@ export async function POST(request: NextRequest) {
 
     // Validate that OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
+      console.error("OpenAI API key is not configured");
       return NextResponse.json(
         { error: "OpenAI API key is not configured" },
         { status: 500 }
       );
     }
-
-    // Initialize OpenAI client only when needed
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
 
     // Call OpenAI API with GPT-4
     const completion = await openai.chat.completions.create({
@@ -50,10 +51,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       reply: reply,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("OpenAI API error:", error);
+    
+    // Log more details about the error
+    if (error?.message) {
+      console.error("Error message:", error.message);
+    }
+    if (error?.response) {
+      console.error("Error response:", error.response);
+    }
+
+    // Return a more descriptive error message
     return NextResponse.json(
-      { error: "Failed to get AI response" },
+      { 
+        error: "Failed to get AI response",
+        details: error?.message || "Unknown error"
+      },
       { status: 500 }
     );
   }

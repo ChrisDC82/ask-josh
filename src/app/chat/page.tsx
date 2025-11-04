@@ -60,10 +60,16 @@ export default function ChatPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get response");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
+
+      // Check if API returned an error
+      if (data.error) {
+        throw new Error(data.error);
+      }
 
       // Display the API reply as Josh's response
       const joshMessage: Message = {
