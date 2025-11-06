@@ -1,10 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
-
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,76 +13,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate that OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
-      console.error("OpenAI API key is not configured");
-      return NextResponse.json(
-        { error: "OpenAI API key is not configured" },
-        { status: 500 }
-      );
-    }
+    // Array of friendly mock replies from Josh
+    const mockReplies = [
+      "Hi there! I'm Josh — how can I help with your property today?",
+      "I can connect you to our power washing or lawn care team!",
+      "That sounds like something we can fix. Can you share your location?",
+      "Thanks! I'll pass that to our maintenance staff.",
+      "Got it! We'll follow up soon.",
+    ];
 
-    // Call OpenAI API with GPT-4, fallback to GPT-3.5-turbo if unavailable
-    let completion;
-    try {
-      completion = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are Josh, a friendly virtual assistant for a property maintenance company. Only answer questions about services like power washing, painting, tree cutting, lawn care, or maintenance scheduling.",
-          },
-          {
-            role: "user",
-            content: message,
-          },
-        ],
-      });
-    } catch (gpt4Error: any) {
-      // If GPT-4 fails (e.g., not available), try GPT-3.5-turbo
-      console.log("GPT-4 unavailable, falling back to GPT-3.5-turbo:", gpt4Error?.message);
-      completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are Josh, a friendly virtual assistant for a property maintenance company. Only answer questions about services like power washing, painting, tree cutting, lawn care, or maintenance scheduling.",
-          },
-          {
-            role: "user",
-            content: message,
-          },
-        ],
-      });
-    }
+    // Select a random reply from the array
+    const reply = mockReplies[Math.floor(Math.random() * mockReplies.length)];
 
-    // Extract the AI-generated reply
-    const reply = completion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
-
-    // Return the AI-generated reply
-    return NextResponse.json({
-      reply: reply,
-    });
-  } catch (error: any) {
-    console.error("OpenAI API error:", error);
-    
-    // Log more details about the error
-    if (error?.message) {
-      console.error("Error message:", error.message);
-    }
-    if (error?.response) {
-      console.error("Error response:", error.response);
-    }
-
-    // Return a more descriptive error message
+    // Return the random reply
+    return NextResponse.json({ reply });
+  } catch (error) {
     return NextResponse.json(
-      { 
-        error: "Failed to get AI response",
-        details: error?.message || "Unknown error"
-      },
-      { status: 500 }
+      { error: "Invalid request body" },
+      { status: 400 }
     );
   }
 }
