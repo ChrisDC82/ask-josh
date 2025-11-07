@@ -22,6 +22,7 @@ export default function ChatPage() {
     },
   ]);
   const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -33,21 +34,22 @@ export default function ChatPage() {
   }, [messages]);
 
   const handleSend = async () => {
-    if (inputValue.trim() === "") return;
+    if (inputValue.trim() === "" || isLoading) return;
 
     const userMessageText = inputValue.trim();
 
     // Store user message in chat history
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `user-${Date.now()}`,
       text: userMessageText,
       sender: "user",
       timestamp: new Date(),
     };
 
-    // Append user message to chat history
+    // Append user message to chat history immediately
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
+    setIsLoading(true);
 
     // Send message to API and get Josh's reply
     try {
@@ -71,9 +73,14 @@ export default function ChatPage() {
         throw new Error(data.error);
       }
 
+      // Validate that reply exists in response
+      if (!data.reply) {
+        throw new Error("No reply received from API");
+      }
+
       // Display the API reply as Josh's response
       const joshMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: `josh-${Date.now()}`,
         text: data.reply,
         sender: "josh",
         timestamp: new Date(),
@@ -82,14 +89,17 @@ export default function ChatPage() {
       // Append Josh's reply to chat history
       setMessages((prev) => [...prev, joshMessage]);
     } catch (error) {
+      console.error("Error sending message:", error);
       // Handle error - show error message as Josh's reply
       const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: `error-${Date.now()}`,
         text: "Sorry, I'm having trouble connecting. Please try again.",
         sender: "josh",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -139,10 +149,10 @@ export default function ChatPage() {
             />
             <button
               onClick={handleSend}
-              disabled={inputValue.trim() === ""}
+              disabled={inputValue.trim() === "" || isLoading}
               className="rounded-lg bg-blue px-6 py-3 font-semibold text-white transition-colors hover:bg-blue/90 focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:px-8"
             >
-              Send
+              {isLoading ? "Sending..." : "Send"}
             </button>
           </div>
         </div>
