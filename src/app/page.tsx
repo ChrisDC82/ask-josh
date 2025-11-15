@@ -69,11 +69,11 @@ export default function Home() {
         <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center text-center">
           <div className="max-w-3xl space-y-8">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
-              Your Property Maintenance
-              <span className="block text-blue"> Assistant</span>
+              Your Community
+              <span className="block text-blue"> Concierge.</span>
             </h1>
             <p className="mx-auto max-w-2xl text-lg text-gray-600 sm:text-xl">
-              Get instant help with property maintenance questions, tips, and guidance from Josh.
+              Connecting you to trusted local businesses, creatives, and service providers.
             </p>
             <div className="flex justify-center">
               <Link
@@ -93,11 +93,10 @@ export default function Home() {
           <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
             <div>
               <h2 className="text-3xl font-semibold text-gray-900 sm:text-4xl">
-                Need hands-on help?
+                Looking for a local creative, artisan, or service?
               </h2>
               <p className="mt-4 text-lg text-gray-600">
-                Tell Josh what you need and our maintenance team will reach out. Power washing,
-                lawn care, painting, tree cutting, or anything else to keep your property in top shape.
+                Tell Josh what you need and we'll connect you with local creatives, small businesses, and cultural service providers in your area.
               </p>
             </div>
 

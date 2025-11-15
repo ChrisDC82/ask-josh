@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ask Josh | Your Maintenance Assistant",
-  description: "Your Property Maintenance Assistant - Get instant help with property maintenance questions, tips, and guidance from Josh.",
+  title: "Ask Josh | Your Community Concierge",
+  description: "Your Community Concierge - Connecting you to trusted local businesses, creatives, and service providers.",
 };
 
 export default function RootLayout({

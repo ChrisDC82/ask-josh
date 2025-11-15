@@ -137,7 +137,7 @@ export default function ChatPage() {
 
       {/* Input Area */}
       <div className="border-t border-gray-200 bg-white">
-        <div className="mx-auto max-w-3xl px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
           <div className="flex gap-2">
             <input
               type="text"
@@ -145,12 +145,12 @@ export default function ChatPage() {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type your message..."
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-blue focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-0 sm:text-base"
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-0 sm:px-4 sm:py-3 sm:text-base"
             />
             <button
               onClick={handleSend}
               disabled={inputValue.trim() === "" || isLoading}
-              className="rounded-lg bg-blue px-6 py-3 font-semibold text-white transition-colors hover:bg-blue/90 focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:px-8"
+              className="rounded-lg bg-blue px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue/90 focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:py-3 sm:text-base"
             >
               {isLoading ? "Sending..." : "Send"}
             </button>

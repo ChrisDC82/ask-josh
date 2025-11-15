@@ -15,11 +15,10 @@ export async function POST(request: NextRequest) {
 
     // Array of friendly mock replies from Josh
     const mockReplies = [
-      "Hi there! I'm Josh — how can I help with your property today?",
-      "I can connect you to our power washing or lawn care team!",
-      "That sounds like something we can fix. Can you share your location?",
-      "Thanks! I'll pass that to our maintenance staff.",
-      "Got it! We'll follow up soon.",
+      "Hey there! I'm Josh, your community concierge. What are you looking for today?",
+      "I can connect you with local creatives, caterers, or artisans near you.",
+      "Would you like to explore cultural services or small business listings?",
+      "Great choice! I'll show you who's available in your area.",
     ];
 
     // Select a random reply from the array
