@@ -1,36 +1,25 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { message } = body;
+let messageCount = 0;
 
-    // Validate that message exists
-    if (!message) {
-      return NextResponse.json(
-        { error: "Message is required" },
-        { status: 400 }
-      );
-    }
+export async function POST(req: Request) {
+  const body = await req.json();
+  const userMessage = body.message || "";
 
-    // Array of friendly mock replies from Josh
-    const mockReplies = [
-      "Hey there! I'm Josh, your community concierge. What are you looking for today?",
-      "I can connect you with local creatives, caterers, or artisans near you.",
-      "Would you like to explore cultural services or small business listings?",
-      "Great choice! I'll show you who's available in your area.",
-    ];
+  messageCount++;
 
-    // Select a random reply from the array
-    const reply = mockReplies[Math.floor(Math.random() * mockReplies.length)];
-
-    // Return the random reply
-    return NextResponse.json({ reply });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Invalid request body" },
-      { status: 400 }
-    );
+  let reply = "";
+  
+  if (messageCount === 1) {
+    reply = "I would be happy to help you with that request.";
+  } else if (messageCount === 2) {
+    reply = "I will forward to my team and they will get back to you shortly with a quotation";
+  } else {
+    reply = "Thank you for your patience. Our team is working on your request.";
   }
-}
 
+  return NextResponse.json({
+    reply,
+    debug: "Mock mode active — not calling HuggingFace or any external API."
+  });
+}

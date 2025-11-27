@@ -1,163 +1,69 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
-import ChatBubble from "@/components/ChatBubble";
+import { useState, useEffect } from "react";
 
-interface Message {
-  id: string;
-  text: string;
-  sender: "user" | "josh";
-  timestamp: Date;
-}
-
-export default function ChatPage() {
-  // State management for chat history
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      text: "Hi, I'm Josh! How can I help you today?",
-      sender: "josh",
-      timestamp: new Date(),
-    },
+export default function Chat() {
+  const [messages, setMessages] = useState<{ from: string; text: string }[]>([
+    { from: "josh", text: "Hi I'm Josh how can I help you today?" }
   ]);
-  const [inputValue, setInputValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [input, setInput] = useState("");
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  async function sendMessage() {
+    if (!input.trim()) return;
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    const userMessage = input;
+    setMessages((prev) => [...prev, { from: "user", text: userMessage }]);
+    setInput("");
 
-  const handleSend = async () => {
-    if (inputValue.trim() === "" || isLoading) return;
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userMessage }),
+    });
 
-    const userMessageText = inputValue.trim();
+    const data = await res.json();
 
-    // Store user message in chat history
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      text: userMessageText,
-      sender: "user",
-      timestamp: new Date(),
-    };
-
-    // Append user message to chat history immediately
-    setMessages((prev) => [...prev, userMessage]);
-    setInputValue("");
-    setIsLoading(true);
-
-    // Send message to API and get Josh's reply
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: userMessageText }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      // Check if API returned an error
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      // Validate that reply exists in response
-      if (!data.reply) {
-        throw new Error("No reply received from API");
-      }
-
-      // Display the API reply as Josh's response
-      const joshMessage: Message = {
-        id: `josh-${Date.now()}`,
-        text: data.reply,
-        sender: "josh",
-        timestamp: new Date(),
-      };
-
-      // Append Josh's reply to chat history
-      setMessages((prev) => [...prev, joshMessage]);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      // Handle error - show error message as Josh's reply
-      const errorMessage: Message = {
-        id: `error-${Date.now()}`,
-        text: "Sorry, I'm having trouble connecting. Please try again.",
-        sender: "josh",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+    setMessages((prev) => [
+      ...prev,
+      { from: "josh", text: data.reply }
+    ]);
+  }
 
   return (
-    <div className="flex h-screen flex-col bg-white">
-      {/* Navbar */}
-      <nav className="w-full border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-blue">
-              Ask Josh
-            </Link>
-          </div>
-        </div>
-      </nav>
+    <div className="w-full max-w-xl mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-4">Ask Josh</h2>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl space-y-4">
-          {messages.map((message) => (
-            <div key={message.id}>
-              <ChatBubble message={message.text} sender={message.sender} />
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+      <div className="border rounded-lg p-4 h-80 overflow-y-auto bg-white">
+        {messages.map((m, i) => (
+          <div key={i} className={`mb-3 ${m.from === "user" ? "text-right" : "text-left"}`}>
+            <span className={`inline-block px-3 py-2 rounded-lg ${
+              m.from === "user" ? "bg-blue-200" : "bg-gray-200"
+            }`}>
+              {m.text}
+            </span>
+          </div>
+        ))}
       </div>
 
-      {/* Input Area */}
-      <div className="border-t border-gray-200 bg-white">
-        <div className="mx-auto max-w-3xl px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
-              className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-0 sm:px-4 sm:py-3 sm:text-base"
-            />
-            <button
-              onClick={handleSend}
-              disabled={inputValue.trim() === "" || isLoading}
-              className="rounded-lg bg-blue px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue/90 focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:py-3 sm:text-base"
-            >
-              {isLoading ? "Sending..." : "Send"}
-            </button>
-          </div>
-        </div>
+      <div className="mt-4 flex gap-2">
+        <input
+          className="flex-1 border rounded px-3 py-2"
+          placeholder="Ask something..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={(e) => {
+            if (e.key === "Enter") {
+              sendMessage();
+            }
+          }}
+        />
+        <button
+          onClick={sendMessage}
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          Send
+        </button>
       </div>
     </div>
   );
 }
-
