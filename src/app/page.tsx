@@ -76,22 +76,22 @@ export default function Home() {
 
   return (
 
-    <main className="min-h-screen bg-white p-6">
+    <main className="min-h-screen bg-white p-4 md:p-6">
 
       {/* HEADER */}
-      <div className="flex justify-start mb-8">
-        <h2 className="text-4xl font-bold text-blue-600">Ask Josh</h2>
+      <div className="flex justify-start mb-4 md:mb-8 px-4 md:px-0">
+        <h2 className="text-2xl md:text-4xl font-bold text-blue-600">Ask Josh</h2>
       </div>
 
       {/* HERO SECTION */}
 
-      <div className="flex flex-col md:flex-row items-center gap-8 mb-16">
+      <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 mb-8 md:mb-16 px-4 md:px-0">
 
-        <div className="md:mr-4 flex items-center gap-4">
+        <div className="md:mr-4 flex items-center gap-2 md:gap-4">
 
           <img
 
-            src="/images/askjosh-mascot.png?v=3"
+            src="/images/askjosh-mascot.png"
 
             alt="Ask Josh Mascot"
 
@@ -99,7 +99,7 @@ export default function Home() {
 
             height={400}
 
-            className="object-contain"
+            className="object-contain w-48 h-48 md:w-96 md:h-96"
 
           />
 
@@ -142,7 +142,7 @@ export default function Home() {
 
 
             {/* SERVICE ICONS - VERTICAL */}
-            <div className="flex flex-col gap-3">
+            <div className="hidden md:flex flex-col gap-3">
 
               <div className="bg-blue-100 p-3 rounded-full hover:bg-blue-200 transition-colors cursor-pointer">
 
@@ -226,9 +226,9 @@ export default function Home() {
 
 
 
-        <div className="max-w-xl">
+        <div className="max-w-xl px-4 md:px-0 text-center md:text-left">
 
-          <h1 className="text-5xl font-bold leading-tight">
+          <h1 className="text-3xl md:text-5xl font-bold leading-tight">
 
             Your Community <span className="text-blue-600">Concierge.</span>
 
@@ -236,7 +236,7 @@ export default function Home() {
 
 
 
-          <p className="text-gray-600 mt-4 text-lg">
+          <p className="text-gray-600 mt-4 text-base md:text-lg">
 
             Connecting you to trusted local businesses, creatives, and service providers.
 
@@ -244,13 +244,13 @@ export default function Home() {
 
 
 
-          <div className="flex gap-4 mt-8">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-6 md:mt-8">
 
             <button
 
               onClick={() => router.push("/chat")}
 
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg"
+              className="bg-blue-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg text-sm md:text-base"
 
               suppressHydrationWarning
 
@@ -266,7 +266,7 @@ export default function Home() {
 
               onClick={() => setShowSearchModal(true)}
 
-              className="bg-yellow-400 text-black px-6 py-3 rounded-lg"
+              className="bg-yellow-400 text-black px-4 py-2 md:px-6 md:py-3 rounded-lg text-sm md:text-base"
 
               suppressHydrationWarning
 
@@ -282,7 +282,7 @@ export default function Home() {
 
               onClick={() => router.push("/providers")}
 
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg"
+              className="bg-blue-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg text-sm md:text-base"
 
               suppressHydrationWarning
 
@@ -305,7 +305,7 @@ export default function Home() {
 
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
 
-          <div className="bg-white rounded-lg shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto mx-4">
 
             <div className="flex justify-between items-center p-6 border-b">
 
