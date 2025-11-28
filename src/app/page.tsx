@@ -91,7 +91,7 @@ export default function Home() {
 
           <img
 
-            src="/images/askjosh-mascot.png"
+            src="/Images/askjosh-mascot.png"
 
             alt="Ask Josh Mascot"
 
@@ -100,6 +100,14 @@ export default function Home() {
             height={400}
 
             className="object-contain w-48 h-48 md:w-96 md:h-96"
+
+            onError={(e) => {
+
+              const img = e.target as HTMLImageElement;
+
+              img.src = "/images/askjosh-mascot.png";
+
+            }}
 
           />
 
