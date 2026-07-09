@@ -8,6 +8,23 @@ import { useState } from "react";
 
 
 
+type ProviderResult = {
+  providerFound: boolean;
+  provider?: {
+    name: string;
+    matched_service: string;
+    location: string;
+    description: string;
+    phone: string;
+    email: string;
+    average_service: string;
+    average_cost: string;
+    call_to_action: string;
+  };
+};
+
+
+
 export default function Home() {
 
   const router = useRouter();
@@ -22,7 +39,7 @@ export default function Home() {
 
   const [loading, setLoading] = useState(false);
 
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<ProviderResult | null>(null);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -91,7 +108,7 @@ export default function Home() {
 
           <img
 
-            src="/Images/askjosh-mascot.png"
+            src="/maintenance-josh.png"
 
             alt="Ask Josh Mascot"
 
@@ -100,14 +117,6 @@ export default function Home() {
             height={400}
 
             className="object-contain w-48 h-48 md:w-96 md:h-96"
-
-            onError={(e) => {
-
-              const img = e.target as HTMLImageElement;
-
-              img.src = "/images/askjosh-mascot.png";
-
-            }}
 
           />
 
@@ -238,7 +247,7 @@ export default function Home() {
 
           <h1 className="text-3xl md:text-5xl font-bold leading-tight">
 
-            Your Community <span className="text-blue-600">Concierge.</span>
+            Your Maintenance <span className="text-blue-600">Concierge.</span>
 
           </h1>
 
@@ -246,7 +255,7 @@ export default function Home() {
 
           <p className="text-gray-600 mt-4 text-base md:text-lg">
 
-            Connecting you to trusted local businesses, creatives, and service providers.
+            Request quotes, schedule repairs, and connect with trusted maintenance professionals in minutes.
 
           </p>
 
@@ -280,7 +289,7 @@ export default function Home() {
 
             >
 
-              Find Service Provider
+              Request Maintenance Service
 
             </button>
 
@@ -288,7 +297,7 @@ export default function Home() {
 
             <button
 
-              onClick={() => router.push("/providers")}
+              onClick={() => setShowSearchModal(true)}
 
               className="bg-blue-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg text-sm md:text-base"
 
@@ -296,7 +305,7 @@ export default function Home() {
 
             >
 
-              Become a Provider
+              Request a Quote
 
             </button>
 
@@ -317,7 +326,7 @@ export default function Home() {
 
             <div className="flex justify-between items-center p-6 border-b">
 
-              <h2 className="text-2xl font-semibold">Find a Service Provider</h2>
+              <h2 className="text-2xl font-semibold">Request Maintenance Service</h2>
 
               <button
 
@@ -401,7 +410,7 @@ export default function Home() {
 
                 >
 
-                  {loading ? "Searching…" : "Find Provider"}
+                  {loading ? "Searching..." : "Request Quote"}
 
                 </button>
 
@@ -417,11 +426,17 @@ export default function Home() {
 
 
 
-                {result && result.providerFound && (
+                {result?.providerFound && result.provider && (
 
                   <div className="border rounded p-4 mt-4">
 
+                    <p className="mb-3 text-sm font-medium text-blue-700">
+                      Josh found a recommended maintenance partner for your request.
+                    </p>
+
                     <h2 className="text-xl font-semibold">{result.provider.name}</h2>
+
+                    <p className="font-medium text-blue-600">{result.provider.matched_service}</p>
 
                     <p className="text-gray-600">{result.provider.location}</p>
 
@@ -437,9 +452,18 @@ export default function Home() {
 
                       <li><strong>Average Service:</strong> {result.provider.average_service}</li>
 
-                      <li><strong>Average Cost:</strong> {result.provider.average_cost}</li>
+                      <li><strong>Estimated Cost Range:</strong> {result.provider.average_cost}</li>
 
                     </ul>
+
+                    <a
+                      href={`mailto:${result.provider.email}?subject=${encodeURIComponent(
+                        `${result.provider.call_to_action}: ${result.provider.matched_service}`,
+                      )}`}
+                      className="inline-block mt-4 px-4 py-2 bg-yellow-400 text-black rounded"
+                    >
+                      {result.provider.call_to_action}
+                    </a>
 
                   </div>
 
@@ -449,7 +473,11 @@ export default function Home() {
 
                 {result && !result.providerFound && (
 
-                  <p className="mt-2">No providers found for that search.</p>
+                  <p className="mt-2">
+                    No maintenance service matched that request. Try AC repair, plumbing,
+                    electrical repairs, painting, pressure washing, lawn care, tree cutting,
+                    or general property maintenance.
+                  </p>
 
                 )}
 

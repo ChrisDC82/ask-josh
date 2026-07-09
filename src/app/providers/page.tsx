@@ -5,18 +5,20 @@ import { useState } from "react";
 export default function ProvidersPage() {
   const [submitted, setSubmitted] = useState(false);
 
-  async function handleSubmit(e: any) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSubmitted(true);
   }
 
   return (
     <div className="max-w-xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-6">Service Provider Sign-Up</h1>
+      <h1 className="text-3xl font-bold mb-2">Request a Maintenance Quote</h1>
+      <p className="text-gray-600 mb-6">
+        Tell Laughlin Maintenance Services what your property needs.
+      </p>
 
       {!submitted ? (
         <form onSubmit={handleSubmit} className="space-y-4">
-
           <div>
             <label className="block font-medium mb-1">Full Name</label>
             <input className="w-full border rounded px-3 py-2" required />
@@ -33,15 +35,16 @@ export default function ProvidersPage() {
           </div>
 
           <div>
-            <label className="block font-medium mb-1">Service Category</label>
+            <label className="block font-medium mb-1">Maintenance Service</label>
             <select className="w-full border rounded px-3 py-2" required>
-              <option>Event Planner</option>
-              <option>Decorator</option>
-              <option>Caterer</option>
-              <option>Videographer</option>
-              <option>Photographer</option>
-              <option>Artist / Creative</option>
-              <option>Other</option>
+              <option>AC Repair &amp; Maintenance</option>
+              <option>Plumbing</option>
+              <option>Electrical Repairs</option>
+              <option>Painting</option>
+              <option>Pressure Washing</option>
+              <option>Lawn Care</option>
+              <option>Tree Cutting</option>
+              <option>General Property Maintenance</option>
             </select>
           </div>
 
@@ -49,17 +52,15 @@ export default function ProvidersPage() {
             type="submit"
             className="w-full bg-yellow-300 text-gray-900 py-2 rounded transition-colors hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
           >
-            Submit
+            Request Quote
           </button>
-
         </form>
       ) : (
         <div className="text-center bg-green-100 p-6 rounded">
           <h2 className="text-2xl font-semibold mb-3">Thank you!</h2>
-          <p>Your application has been received. We will contact you soon.</p>
+          <p>Your quote request has been received. Our maintenance team will contact you soon.</p>
         </div>
       )}
     </div>
   );
 }
-

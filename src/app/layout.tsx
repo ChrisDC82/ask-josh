@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ask Josh | Your Community Concierge",
-  description: "Your Community Concierge - Connecting you to trusted local businesses, creatives, and service providers.",
+  title: "Ask Josh | Your Maintenance Concierge",
+  description:
+    "Request quotes, schedule repairs, and book trusted maintenance services from Laughlin Maintenance Services.",
 };
 
 export default function RootLayout({
