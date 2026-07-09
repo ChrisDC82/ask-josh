@@ -41,9 +41,9 @@ export default function AdminDashboardPage() {
       }
 
       setRequests(data.requests || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to load requests", err);
-      setError(err.message || "Failed to fetch requests");
+      setError(err instanceof Error ? err.message : "Failed to fetch requests");
     } finally {
       setLoading(false);
     }
@@ -67,9 +67,9 @@ export default function AdminDashboardPage() {
       }
 
       setRequests((prev) => prev.filter((request) => request.id !== id));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to mark request as done", err);
-      setError(err.message || "Unable to mark request as done");
+      setError(err instanceof Error ? err.message : "Unable to mark request as done");
     } finally {
       setActionId(null);
     }
@@ -168,4 +168,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
