@@ -8,6 +8,7 @@ import {
   SUPPORTED_LOCATION,
   type Provider,
 } from "@/data/providers";
+import WebMCPTools from "@/components/WebMCPTools";
 
 interface ProviderResult extends Provider {
   matched_service: string;
@@ -109,6 +110,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white text-slate-950">
+      <WebMCPTools />
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <a href="#top" className="text-2xl font-black tracking-tight text-blue-700">AskJosh</a>

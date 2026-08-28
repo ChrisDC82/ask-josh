@@ -8,7 +8,7 @@
     "vercel-build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test src/lib/providerSearch.test.ts src/lib/adminSession.test.ts"
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test src/lib/providerSearch.test.ts src/lib/adminSession.test.ts src/lib/webMcpMaintenanceServices.test.ts"
   },
   "dependencies": {
     "@huggingface/inference": "^4.13.3",

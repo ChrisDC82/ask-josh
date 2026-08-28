@@ -54,7 +54,18 @@ The OpenAI and Hugging Face packages are not used by the Phase A application. No
 - Static public provider catalogue in `src/data/providers.ts`
 - Reusable deterministic matching in `src/lib/providerSearch.ts`
 - Signed admin sessions in `src/lib/adminSession.ts`
+- Read-only WebMCP registration in `src/components/WebMCPTools.tsx`
 - Vercel deployment configuration linked locally through `.vercel/`
+
+## WebMCP foundation
+
+Phase B adds one read-only WebMCP site tool: `find_maintenance_services`.
+
+The tool searches the same public La Brea maintenance catalogue used by the normal website. It accepts a required `query`, optional `location`, and optional bounded `limit`, then returns grounded service matches with public service fields and indicative, non-binding cost ranges.
+
+Normal browser use does not depend on WebMCP. Browsers without `document.modelContext` continue to render and search the site normally, with no visible WebMCP failure state.
+
+To test live discovery, open the homepage in ChatGPT's in-app browser with site tools enabled, or in a compatible Chrome environment with WebMCP support enabled. The site tools menu should expose `find_maintenance_services`. Later tools such as detailed service lookup, maintenance plans, quote submission, and write actions are not implemented yet.
 
 ## Repository note
 

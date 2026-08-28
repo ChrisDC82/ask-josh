@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-08-28 - AskJosh Phase B Foundation
+
+Added the initial read-only WebMCP foundation without changing normal website behavior.
+
+- Registered one WebMCP site tool, `find_maintenance_services`, from the homepage.
+- Reused the existing public provider catalogue and deterministic provider-search logic.
+- Added structured tool results for grounded La Brea maintenance-service matches.
+- Added safe handling for blank queries, unsupported locations, no matches, result limits, and maximum limit capping.
+- Added isolated local typings for the experimental `document.modelContext` browser API.
+- Documented WebMCP fallback behavior and manual discovery testing.
+- Added focused tests for WebMCP tool behavior and public-field output.
+
+WebMCP remains read-only in Phase B. Detailed service lookup, maintenance planning, quote submission, and consequential write tools are deferred.
+
 ## 2026-08-28 - AskJosh Phase A
 
 Completed Phase A stabilization and stakeholder polish for the canonical AskJosh application.

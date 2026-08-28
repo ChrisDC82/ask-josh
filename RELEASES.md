@@ -1,5 +1,26 @@
 # Releases
 
+## AskJosh — Phase B: WebMCP Foundation
+
+Status: completed
+
+Purpose: establish a correct, maintainable WebMCP foundation before expanding the AskJosh tool surface.
+
+Major verified improvements:
+
+- Implemented `find_maintenance_services` as a read-only WebMCP site tool.
+- Returned deterministic, catalogue-grounded service matches from the current public AskJosh data.
+- Preserved the existing normal-browser homepage and service-search experience.
+- Added graceful fallback for unsupported browsers with no visible failure state.
+- Verified localhost WebMCP discovery and tool calls.
+- Added focused WebMCP behavior tests; 17/17 tests passed.
+
+Notes:
+
+- No AI model/API calls were added.
+- No consequential or write WebMCP actions were added.
+- Production deployment verification is still required after deployment.
+
 ## AskJosh — Phase A: Stabilization & Stakeholder Polish
 
 Status: completed
