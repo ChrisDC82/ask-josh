@@ -1,4 +1,8 @@
-# Add HuggingFace API Key to Vercel
+# Hugging Face API key — not required for Phase A
+
+AskJosh currently uses deterministic catalogue guidance and makes no Hugging Face API calls. No key is required. Do not configure a paid AI service without explicit approval.
+
+## Historical instructions
 
 ## Quick Steps:
 

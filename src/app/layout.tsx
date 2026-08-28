@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ask Josh | Your Maintenance Concierge",
+  title: "AskJosh | Maintenance Service Concierge",
   description:
-    "Request quotes, schedule repairs, and book trusted maintenance services from Laughlin Maintenance Services.",
+    "Find maintenance services currently listed for La Brea, review indicative cost ranges, and contact the listed provider directly.",
 };
 
 export default function RootLayout({
@@ -25,10 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>
     </html>

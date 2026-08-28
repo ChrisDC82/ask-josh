@@ -1,9 +1,5 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  images: {
-    unoptimized: true, // Disable image optimization to ensure images load
-  },
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

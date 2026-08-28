@@ -29,13 +29,13 @@ export default function AdminLoginPage() {
 
       const data = await response.json();
 
-      if (!response.ok || !data?.token) {
+      if (!response.ok || !data?.success) {
         setError(data?.error || "Invalid password.");
         return;
       }
 
-      localStorage.setItem("adminSession", data.token);
       router.push("/admin/dashboard");
+      router.refresh();
     } catch (err) {
       console.error("Login error", err);
       setError("Something went wrong. Please try again.");
@@ -60,6 +60,7 @@ export default function AdminLoginPage() {
             <input
               id="password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue focus:outline-none focus:ring-2 focus:ring-blue"

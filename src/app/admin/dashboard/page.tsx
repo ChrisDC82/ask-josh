@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface RequestRecord {
@@ -18,23 +18,18 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [actionId, setActionId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem("adminSession");
-    if (!token) {
-      router.replace("/admin");
-      return;
-    }
-    fetchRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
       const response = await fetch("/api/admin/requests");
       const data = await response.json();
+
+      if (response.status === 401) {
+        router.replace("/admin");
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(data?.error || "Failed to fetch requests");
@@ -47,9 +42,18 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
-  const handleMarkAsDone = async (id: string) => {
+  useEffect(() => {
+    void fetchRequests();
+  }, [fetchRequests]);
+
+  const handleDeleteRequest = async (id: string) => {
+    const confirmed = window.confirm(
+      "Permanently delete this completed request? This action cannot be undone.",
+    );
+    if (!confirmed) return;
+
     setActionId(id);
     setError(null);
 
@@ -61,6 +65,11 @@ export default function AdminDashboardPage() {
       });
 
       const data = await response.json();
+
+      if (response.status === 401) {
+        router.replace("/admin");
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(data?.error || "Failed to update request");
@@ -75,6 +84,12 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleLogout = async () => {
+    await fetch("/api/admin/logout", { method: "POST" });
+    router.replace("/admin");
+    router.refresh();
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 px-4 py-6 sm:py-10">
       <div className="mx-auto max-w-5xl">
@@ -82,16 +97,24 @@ export default function AdminDashboardPage() {
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 sm:text-3xl">Admin Dashboard</h1>
             <p className="mt-2 text-sm text-gray-600">
-              Review incoming service requests and mark them as done when completed.
+              Review historical service requests. Deleting a completed request is permanent.
             </p>
           </div>
-          <button
-            onClick={fetchRequests}
-            className="rounded-md bg-blue px-4 py-2 text-sm font-medium text-white transition hover:bg-blue/90 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
-            disabled={loading}
-          >
-            {loading ? "Refreshing..." : "Refresh"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => void fetchRequests()}
+              className="rounded-md bg-blue px-4 py-2 text-sm font-medium text-white transition hover:bg-blue/90 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={loading}
+            >
+              {loading ? "Refreshing..." : "Refresh"}
+            </button>
+            <button
+              onClick={handleLogout}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
 
         {error && <div className="mb-4 rounded-md bg-red-100 p-3 text-sm text-red-700">{error}</div>}
@@ -150,11 +173,11 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-right text-sm sm:px-4">
                         <button
-                          onClick={() => handleMarkAsDone(request.id)}
+                          onClick={() => handleDeleteRequest(request.id)}
                           disabled={actionId === request.id}
                           className="rounded-md bg-green-600 px-2 py-1.5 text-xs text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-70 sm:px-3 sm:py-2 sm:text-sm"
                         >
-                          {actionId === request.id ? "Marking..." : "Mark as done"}
+                          {actionId === request.id ? "Deleting..." : "Delete completed"}
                         </button>
                       </td>
                     </tr>

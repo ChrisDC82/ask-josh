@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import {
+  ADMIN_SESSION_COOKIE,
+  isValidAdminSessionToken,
+} from "@/lib/adminSession";
+
+function isAuthenticated(request: NextRequest) {
+  return isValidAdminSessionToken(
+    request.cookies.get(ADMIN_SESSION_COOKIE)?.value,
+    process.env.ADMIN_SESSION_SECRET,
+  );
+}
+
+function unauthorized() {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+}
 
 function getSupabaseAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseServiceRoleKey) {
-    console.warn("Supabase credentials missing. requests API disabled.");
     return null;
   }
 
@@ -17,13 +31,15 @@ function getSupabaseAdminClient() {
   });
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!isAuthenticated(request)) return unauthorized();
+
   const supabase = getSupabaseAdminClient();
 
   if (!supabase) {
     return NextResponse.json(
-      { error: "Supabase not configured" },
-      { status: 500 },
+      { error: "Request storage is not configured." },
+      { status: 503 },
     );
   }
 
@@ -40,23 +56,27 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({ requests: data ?? [] });
+  const response = NextResponse.json({ requests: data ?? [] });
+  response.headers.set("Cache-Control", "no-store");
+  return response;
 }
 
 export async function DELETE(request: NextRequest) {
+  if (!isAuthenticated(request)) return unauthorized();
+
   const supabase = getSupabaseAdminClient();
 
   if (!supabase) {
     return NextResponse.json(
-      { error: "Supabase not configured" },
-      { status: 500 },
+      { error: "Request storage is not configured." },
+      { status: 503 },
     );
   }
 
   try {
     const { id } = await request.json();
 
-    if (!id) {
+    if (typeof id !== "string" || !id.trim() || id.length > 128) {
       return NextResponse.json(
         { error: "Request id is required" },
         { status: 400 },
@@ -74,7 +94,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }

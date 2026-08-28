@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AskJosh
 
-## Getting Started
+AskJosh is a focused maintenance-service concierge for La Brea, Trinidad and Tobago. The current application helps a user match a property need to services listed for Laughlin Maintenance Services, review indicative cost ranges, and choose a direct contact option.
 
-First, run the development server:
+This is not yet a multi-provider marketplace. Availability, provider contact details, and final prices must be confirmed directly.
+
+## Current functionality
+
+- Catalogue-backed maintenance-service search
+- Eight maintenance categories for the current La Brea service area
+- Direct phone and email contact options
+- A user-reviewed quote email draft; AskJosh does not send or store the draft
+- A clearly labelled catalogue service guide with no paid AI calls
+- A protected admin request viewer for historical Supabase request records
+
+Public request insertion is intentionally disabled in Phase A. The existing request schema cannot store a useful contactable request cleanly, and the application must not claim receipt when nothing was stored.
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test
+npm run lint
+npx tsc --noEmit --incremental false
+npm run build
+```
 
-## Learn More
+## Environment configuration
 
-To learn more about Next.js, take a look at the following resources:
+Environment files are ignored by Git. Never commit real values.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The public catalogue and search do not require environment variables. Historical admin request access requires:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `ADMIN_PASSWORD` — shared Phase A administrator password
+- `ADMIN_SESSION_SECRET` — a random secret of at least 32 characters used to sign HttpOnly sessions
+- `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` — server-only key used only after admin-session validation
 
-## Deploy on Vercel
+`SUPABASE_SERVICE_ROLE_KEY` must never be exposed through client code or an unauthenticated endpoint.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The OpenAI and Hugging Face packages are not used by the Phase A application. No AI API key is required.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Architecture
+
+- Next.js App Router and TypeScript
+- Static public provider catalogue in `src/data/providers.ts`
+- Reusable deterministic matching in `src/lib/providerSearch.ts`
+- Signed admin sessions in `src/lib/adminSession.ts`
+- Vercel deployment configuration linked locally through `.vercel/`
+
+## Repository note
+
+The canonical application checkout is currently `C:\ask-josh\ask-josh`. The parent `C:\ask-josh` repository contains a stale gitlink and must not be restructured or deleted without a separate verified cleanup procedure.

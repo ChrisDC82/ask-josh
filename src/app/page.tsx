@@ -1,498 +1,281 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import {
+  providers as serviceCatalogue,
+  SUPPORTED_LOCATION,
+  type Provider,
+} from "@/data/providers";
 
+interface ProviderResult extends Provider {
+  matched_service: string;
+}
 
-import { useRouter } from "next/navigation";
+interface SearchResponse {
+  error?: string;
+  providers?: ProviderResult[];
+  reason?: "matches_found" | "no_matches" | "unsupported_location";
+  supportedLocation?: string;
+}
 
-import { useState } from "react";
-
-
-
-type ProviderResult = {
-  providerFound: boolean;
-  provider?: {
-    name: string;
-    matched_service: string;
-    location: string;
-    description: string;
-    phone: string;
-    email: string;
-    average_service: string;
-    average_cost: string;
-    call_to_action: string;
-  };
-};
-
-
+const howItWorks = [
+  { step: "1", title: "Describe the job", text: "Enter the maintenance service your property needs." },
+  { step: "2", title: "Review a match", text: "See grounded service details and an indicative cost range from the current catalogue." },
+  { step: "3", title: "Choose how to contact", text: "Call, email, or prepare a quote email that you review and send yourself." },
+];
 
 export default function Home() {
-
-  const router = useRouter();
-
-
-
-  // FORM STATES
-
-  const [service, setService] = useState("AC repair and maintenance");
-
-  const [location, setLocation] = useState("La Brea");
-
+  const [service, setService] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const [result, setResult] = useState<ProviderResult | null>(null);
-
+  const [results, setResults] = useState<ProviderResult[]>([]);
   const [error, setError] = useState<string | null>(null);
-
+  const [searched, setSearched] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const serviceInputRef = useRef<HTMLInputElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
-
-
-  async function handleSubmit(e: React.FormEvent) {
-
-    e.preventDefault();
-
-    setLoading(true);
-
+  function openSearch(prefill = "") {
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    setService(prefill);
+    setResults([]);
     setError(null);
-
-    setResult(null);
-
-
-
-    try {
-
-      const res = await fetch("/api/providers", {
-
-        method: "POST",
-
-        headers: { "Content-Type": "application/json" },
-
-        body: JSON.stringify({ service, location }),
-
-      });
-
-
-
-      const data = await res.json();
-
-      setResult(data);
-
-    } catch {
-
-      setError("Network error");
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
+    setSearched(false);
+    setShowSearchModal(true);
   }
 
+  function closeSearch() {
+    setShowSearchModal(false);
+  }
 
+  useEffect(() => {
+    if (!showSearchModal) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const frame = requestAnimationFrame(() => serviceInputRef.current?.focus());
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") closeSearch();
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousFocusRef.current?.focus();
+    };
+  }, [showSearchModal]);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const query = service.trim();
+
+    if (!query) {
+      setError("Enter a maintenance service to search.");
+      setResults([]);
+      setSearched(false);
+      serviceInputRef.current?.focus();
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setResults([]);
+    setSearched(false);
+
+    try {
+      const response = await fetch("/api/providers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ service: query, location: SUPPORTED_LOCATION }),
+      });
+      const data = (await response.json()) as SearchResponse;
+      if (!response.ok) throw new Error(data.error || "Search is unavailable.");
+
+      setResults(data.providers || []);
+      setSearched(true);
+      if (data.reason === "unsupported_location") {
+        setError(`The current catalogue only covers ${data.supportedLocation || SUPPORTED_LOCATION}.`);
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Search is unavailable.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-
-    <main className="min-h-screen bg-white p-4 md:p-6">
-
-      {/* HEADER */}
-      <div className="flex justify-start mb-4 md:mb-8 px-4 md:px-0">
-        <h2 className="text-2xl md:text-4xl font-bold text-blue-600">Ask Josh</h2>
-      </div>
-
-      {/* HERO SECTION */}
-
-      <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 mb-8 md:mb-16 px-4 md:px-0">
-
-        <div className="md:mr-4 flex items-center gap-2 md:gap-4">
-
-          <img
-
-            src="/maintenance-josh.png"
-
-            alt="Ask Josh Mascot"
-
-            width={400}
-
-            height={400}
-
-            className="object-contain w-48 h-48 md:w-96 md:h-96"
-
-          />
-
-          <div className="flex flex-col items-center gap-4">
-
-            <a
-
-              href="https://instagram.com/askjoshtt"
-
-              target="_blank"
-
-              rel="noopener noreferrer"
-
-              className="text-pink-600 hover:text-pink-700 transition-colors"
-
-              aria-label="Follow us on Instagram"
-
-            >
-
-              <svg
-
-                xmlns="http://www.w3.org/2000/svg"
-
-                width="48"
-
-                height="48"
-
-                viewBox="0 0 24 24"
-
-                fill="currentColor"
-
-              >
-
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.98-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.98-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-
-              </svg>
-
-            </a>
-
-
-
-            {/* SERVICE ICONS - VERTICAL */}
-            <div className="hidden md:flex flex-col gap-3">
-
-              <div className="bg-blue-100 p-3 rounded-full hover:bg-blue-200 transition-colors cursor-pointer">
-
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
-
-                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-
-                </svg>
-
-              </div>
-
-
-
-              <div className="bg-blue-100 p-3 rounded-full hover:bg-blue-200 transition-colors cursor-pointer">
-
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
-
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-
-                  <circle cx="12" cy="10" r="3"/>
-
-                </svg>
-
-              </div>
-
-
-
-              <div className="bg-blue-100 p-3 rounded-full hover:bg-blue-200 transition-colors cursor-pointer">
-
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
-
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-
-                </svg>
-
-              </div>
-
-
-
-              <div className="bg-blue-100 p-3 rounded-full hover:bg-blue-200 transition-colors cursor-pointer">
-
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
-
-                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-
-                  <line x1="3" y1="6" x2="21" y2="6"/>
-
-                  <path d="M16 10a4 4 0 0 1-8 0"/>
-
-                </svg>
-
-              </div>
-
-
-
-              <div className="bg-blue-100 p-3 rounded-full hover:bg-blue-200 transition-colors cursor-pointer">
-
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
-
-                  <path d="M3 2v7h18V2"/>
-
-                  <line x1="3" y1="12" x2="21" y2="12"/>
-
-                  <path d="M12 22l-3-3h6l-3 3z"/>
-
-                </svg>
-
-              </div>
-
+    <main className="min-h-screen bg-white text-slate-950">
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+          <a href="#top" className="text-2xl font-black tracking-tight text-blue-700">AskJosh</a>
+          <nav aria-label="Primary navigation" className="hidden items-center gap-6 text-sm font-semibold text-slate-700 md:flex">
+            <a href="#how-it-works" className="hover:text-blue-700">How it works</a>
+            <a href="#services" className="hover:text-blue-700">Services</a>
+            <a href="#coverage" className="hover:text-blue-700">Coverage</a>
+            <Link href="/chat" className="hover:text-blue-700">Service guide</Link>
+          </nav>
+          <button type="button" onClick={() => openSearch()} className="rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800">
+            Find a service
+          </button>
+        </div>
+      </header>
+
+      <section id="top" className="overflow-hidden bg-gradient-to-br from-blue-50 via-white to-yellow-50">
+        <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 sm:px-6 md:grid-cols-[0.85fr_1.15fr] md:py-16 lg:px-8 lg:py-20">
+          <div className="order-2 mx-auto max-w-[260px] md:max-w-sm">
+            <Image src="/maintenance-josh.png" alt="Josh, the AskJosh maintenance guide" width={1024} height={1536} priority sizes="(max-width: 768px) 260px, 380px" className="h-auto w-full drop-shadow-xl" />
+          </div>
+          <div className="order-1">
+            <p className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-bold text-blue-800">Maintenance concierge · {SUPPORTED_LOCATION}</p>
+            <h1 className="mt-5 max-w-3xl text-4xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">Find a maintenance service for your property need.</h1>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">Tell Josh what needs attention and review matching services from the current {SUPPORTED_LOCATION} catalogue, including indicative cost ranges and direct contact options.</p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <button type="button" onClick={() => openSearch()} className="rounded-xl bg-blue-700 px-6 py-3.5 text-base font-bold text-white shadow-md transition hover:bg-blue-800">Find a maintenance service</button>
+              <a href="#services" className="rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-center text-base font-bold text-slate-800 transition hover:border-blue-300 hover:text-blue-800">Browse available services</a>
             </div>
-
+            <p className="mt-4 text-sm text-slate-600">AskJosh currently presents services offered by Laughlin Maintenance Services. Availability and final prices must be confirmed directly.</p>
           </div>
-
         </div>
+      </section>
 
+      <section id="how-it-works" className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="max-w-2xl">
+          <p className="text-sm font-bold uppercase tracking-widest text-blue-700">How AskJosh works</p>
+          <h2 className="mt-2 text-3xl font-black tracking-tight">A clear path from need to contact</h2>
+        </div>
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {howItWorks.map((item) => (
+            <article key={item.step} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-300 font-black text-slate-950">{item.step}</span>
+              <h3 className="mt-4 text-xl font-bold">{item.title}</h3>
+              <p className="mt-2 leading-7 text-slate-600">{item.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
-
-        <div className="max-w-xl px-4 md:px-0 text-center md:text-left">
-
-          <h1 className="text-3xl md:text-5xl font-bold leading-tight">
-
-            Your Maintenance <span className="text-blue-600">Concierge.</span>
-
-          </h1>
-
-
-
-          <p className="text-gray-600 mt-4 text-base md:text-lg">
-
-            Request quotes, schedule repairs, and connect with trusted maintenance professionals in minutes.
-
-          </p>
-
-
-
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-6 md:mt-8">
-
-            <button
-
-              onClick={() => router.push("/chat")}
-
-              className="bg-blue-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg text-sm md:text-base"
-
-              suppressHydrationWarning
-
-            >
-
-              Chat with Josh
-
-            </button>
-
-
-
-            <button
-
-              onClick={() => setShowSearchModal(true)}
-
-              className="bg-yellow-400 text-black px-4 py-2 md:px-6 md:py-3 rounded-lg text-sm md:text-base"
-
-              suppressHydrationWarning
-
-            >
-
-              Request Maintenance Service
-
-            </button>
-
-
-
-            <button
-
-              onClick={() => setShowSearchModal(true)}
-
-              className="bg-blue-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg text-sm md:text-base"
-
-              suppressHydrationWarning
-
-            >
-
-              Request a Quote
-
-            </button>
-
+      <section id="services" className="bg-slate-50 py-14">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div className="max-w-2xl">
+              <p className="text-sm font-bold uppercase tracking-widest text-blue-700">Services available</p>
+              <h2 className="mt-2 text-3xl font-black tracking-tight">Current maintenance categories</h2>
+              <p className="mt-3 leading-7 text-slate-600">Select a category to search the catalogue. These are service offerings, not separate provider businesses.</p>
+            </div>
+            <p className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">{serviceCatalogue.length} services · {SUPPORTED_LOCATION}</p>
           </div>
-
-        </div>
-
-      </div>
-
-
-
-      {/* SEARCH MODAL */}
-      {showSearchModal && (
-
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-
-          <div className="bg-white rounded-lg shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto mx-4">
-
-            <div className="flex justify-between items-center p-6 border-b">
-
-              <h2 className="text-2xl font-semibold">Request Maintenance Service</h2>
-
-              <button
-
-                onClick={() => {
-
-                  setShowSearchModal(false);
-
-                  setResult(null);
-
-                  setError(null);
-
-                }}
-
-                className="text-gray-500 hover:text-gray-700 text-2xl"
-
-                suppressHydrationWarning
-
-              >
-
-                ×
-
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {serviceCatalogue.map((provider) => (
+              <button type="button" key={provider.id} onClick={() => openSearch(provider.category)} className="group rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-800" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-8 8l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 8-8z" /></svg>
+                </span>
+                <h3 className="mt-4 font-bold text-slate-950 group-hover:text-blue-800">{provider.category}</h3>
+                <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{provider.description}</p>
               </button>
+            ))}
+          </div>
+        </div>
+      </section>
 
+      <section id="coverage" className="mx-auto grid max-w-6xl gap-6 px-4 py-14 sm:px-6 md:grid-cols-2 lg:px-8">
+        <article className="rounded-3xl bg-blue-800 p-7 text-white md:p-9">
+          <p className="text-sm font-bold uppercase tracking-widest text-blue-100">Current service area</p>
+          <h2 className="mt-3 text-3xl font-black">{SUPPORTED_LOCATION}</h2>
+          <p className="mt-4 leading-7 text-blue-50">AskJosh is starting with a focused catalogue for La Brea. The search does not claim coverage, providers, or availability outside this current scope.</p>
+        </article>
+        <article className="rounded-3xl border border-slate-200 bg-white p-7 md:p-9">
+          <p className="text-sm font-bold uppercase tracking-widest text-blue-700">What AskJosh helps with</p>
+          <h2 className="mt-3 text-3xl font-black">Make the first step easier</h2>
+          <ul className="mt-5 space-y-3 text-slate-700">
+            <li>• Understand which listed service fits a property need.</li>
+            <li>• Review an indicative cost range before making contact.</li>
+            <li>• Reach the listed provider directly and confirm the details.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section className="border-y border-yellow-200 bg-yellow-50">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <p className="text-sm font-bold uppercase tracking-widest text-yellow-900">Future provider participation</p>
+            <h2 className="mt-2 text-3xl font-black">Building carefully from a focused starting point</h2>
+            <p className="mt-4 leading-7 text-slate-700">AskJosh currently presents one maintenance provider. A future phase can introduce a transparent participation and verification process for additional maintenance providers without changing the straightforward customer experience.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer className="bg-slate-950 text-slate-300">
+        <div className="mx-auto flex max-w-6xl flex-col justify-between gap-5 px-4 py-8 sm:px-6 md:flex-row md:items-center lg:px-8">
+          <div><p className="text-xl font-black text-white">AskJosh</p><p className="mt-1 text-sm">A focused maintenance-service concierge for La Brea.</p></div>
+          <div className="flex flex-wrap gap-5 text-sm font-semibold">
+            <Link href="/chat" className="hover:text-white">Catalogue service guide</Link>
+            <a href="https://instagram.com/askjoshtt" target="_blank" rel="noopener noreferrer" className="hover:text-white">Instagram</a>
+            <a href="#top" className="hover:text-white">Back to top</a>
+          </div>
+        </div>
+      </footer>
+
+      {showSearchModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) closeSearch(); }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="service-search-title" className="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4 sm:px-6">
+              <div><h2 id="service-search-title" className="text-2xl font-black">Find a maintenance service</h2><p className="mt-1 text-sm text-slate-600">Searching the current {SUPPORTED_LOCATION} catalogue.</p></div>
+              <button type="button" onClick={closeSearch} className="rounded-lg p-2 text-2xl leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-900" aria-label="Close service search">×</button>
             </div>
-
-
-
-            <div className="p-6">
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-
+            <div className="p-5 sm:p-6">
+              <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-[1fr_180px]">
                 <div>
-
-                  <label className="text-sm font-medium">Service</label>
-
-                  <input
-
-                    value={service}
-
-                    onChange={(e) => setService(e.target.value)}
-
-                    className="mt-1 block w-full rounded-md border px-3 py-2"
-
-                    suppressHydrationWarning
-
-                  />
-
+                  <label htmlFor="service" className="text-sm font-bold text-slate-800">Service needed</label>
+                  <input ref={serviceInputRef} id="service" list="service-options" value={service} maxLength={100} onChange={(event) => setService(event.target.value)} placeholder="For example: plumbing" className="mt-1.5 block w-full rounded-lg border border-slate-300 px-3 py-3" aria-describedby="service-help" />
+                  <datalist id="service-options">{serviceCatalogue.map((provider) => <option value={provider.category} key={provider.id} />)}</datalist>
+                  <p id="service-help" className="mt-1.5 text-xs text-slate-500">Use a category or briefly describe the maintenance need.</p>
                 </div>
-
-
-
                 <div>
-
-                  <label className="text-sm font-medium">Location</label>
-
-                  <input
-
-                    value={location}
-
-                    onChange={(e) => setLocation(e.target.value)}
-
-                    className="mt-1 block w-full rounded-md border px-3 py-2"
-
-                    suppressHydrationWarning
-
-                  />
-
+                  <label htmlFor="location" className="text-sm font-bold text-slate-800">Current area</label>
+                  <input id="location" value={SUPPORTED_LOCATION} readOnly className="mt-1.5 block w-full rounded-lg border border-slate-200 bg-slate-100 px-3 py-3 text-slate-700" />
                 </div>
-
-
-
-                <button
-
-                  type="submit"
-
-                  className="px-4 py-2 bg-blue-600 text-white rounded"
-
-                  disabled={loading}
-
-                  suppressHydrationWarning
-
-                >
-
-                  {loading ? "Searching..." : "Request Quote"}
-
-                </button>
-
+                <button type="submit" disabled={loading} className="rounded-lg bg-blue-700 px-5 py-3 font-bold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60 sm:col-span-2 sm:w-fit">{loading ? "Searching…" : "Search catalogue"}</button>
               </form>
 
-
-
-              {/* RESULTS */}
-
-              <div className="mt-6">
-
-                {error && <p className="text-red-600">{error}</p>}
-
-
-
-                {result?.providerFound && result.provider && (
-
-                  <div className="border rounded p-4 mt-4">
-
-                    <p className="mb-3 text-sm font-medium text-blue-700">
-                      Josh found a recommended maintenance partner for your request.
-                    </p>
-
-                    <h2 className="text-xl font-semibold">{result.provider.name}</h2>
-
-                    <p className="font-medium text-blue-600">{result.provider.matched_service}</p>
-
-                    <p className="text-gray-600">{result.provider.location}</p>
-
-                    <p className="mt-2">{result.provider.description}</p>
-
-
-
-                    <ul className="mt-2 text-sm">
-
-                      <li><strong>Phone:</strong> {result.provider.phone}</li>
-
-                      <li><strong>Email:</strong> {result.provider.email}</li>
-
-                      <li><strong>Average Service:</strong> {result.provider.average_service}</li>
-
-                      <li><strong>Estimated Cost Range:</strong> {result.provider.average_cost}</li>
-
-                    </ul>
-
-                    <a
-                      href={`mailto:${result.provider.email}?subject=${encodeURIComponent(
-                        `${result.provider.call_to_action}: ${result.provider.matched_service}`,
-                      )}`}
-                      className="inline-block mt-4 px-4 py-2 bg-yellow-400 text-black rounded"
-                    >
-                      {result.provider.call_to_action}
-                    </a>
-
+              <div className="mt-6" aria-live="polite">
+                {error && <p className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-800">{error}</p>}
+                {results.length > 0 && (
+                  <div className="space-y-4">
+                    <p className="text-sm font-semibold text-blue-800">{results.length === 1 ? "One matching service" : `${results.length} matching services`} found in the current catalogue.</p>
+                    {results.map((provider) => (
+                      <article key={provider.id} className="rounded-xl border border-slate-200 p-5">
+                        <p className="text-sm font-bold text-blue-700">{provider.matched_service}</p>
+                        <h3 className="mt-1 text-xl font-black">{provider.name}</h3>
+                        <p className="mt-1 text-sm text-slate-600">{provider.location}</p>
+                        <p className="mt-3 leading-7 text-slate-700">{provider.description}</p>
+                        <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                          <div className="rounded-lg bg-slate-50 p-3"><dt className="font-bold text-slate-900">Typical service</dt><dd className="mt-1 text-slate-600">{provider.average_service}</dd></div>
+                          <div className="rounded-lg bg-slate-50 p-3"><dt className="font-bold text-slate-900">Indicative range</dt><dd className="mt-1 text-slate-600">{provider.average_cost}</dd></div>
+                        </dl>
+                        <p className="mt-3 text-xs text-slate-500">Final price and availability must be confirmed directly with the provider.</p>
+                        {!provider.contact_verified && <p className="mt-2 rounded-lg bg-yellow-50 p-2 text-xs font-medium text-yellow-900">Provider contact details are pending owner verification.</p>}
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <a href={provider.phone_href} className="rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white hover:bg-blue-800">Call {provider.phone}</a>
+                          <a href={`mailto:${provider.email}`} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-800 hover:border-blue-300">Email provider</a>
+                          <Link href={`/providers?service=${encodeURIComponent(provider.category)}`} className="rounded-lg bg-yellow-300 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-yellow-400">Prepare quote email</Link>
+                        </div>
+                      </article>
+                    ))}
                   </div>
-
                 )}
-
-
-
-                {result && !result.providerFound && (
-
-                  <p className="mt-2">
-                    No maintenance service matched that request. Try AC repair, plumbing,
-                    electrical repairs, painting, pressure washing, lawn care, tree cutting,
-                    or general property maintenance.
-                  </p>
-
+                {searched && results.length === 0 && !error && (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-5"><h3 className="font-bold">No catalogue match found</h3><p className="mt-2 text-sm leading-6 text-slate-600">Try one of the service categories shown on the homepage. AskJosh will not invent a provider or claim coverage outside {SUPPORTED_LOCATION}.</p></div>
                 )}
-
               </div>
-
             </div>
-
-          </div>
-
+          </section>
         </div>
-
       )}
-
     </main>
-
   );
-
 }

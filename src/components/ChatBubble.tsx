@@ -13,8 +13,8 @@ export default function ChatBubble({ message, sender }: ChatBubbleProps) {
       <div
         className={`max-w-[80%] rounded-2xl px-4 py-3 sm:max-w-[70%] ${
           sender === "user"
-            ? "bg-blue text-white"
-            : "bg-gray-100 text-gray-900"
+            ? "bg-blue-700 text-white"
+            : "bg-slate-100 text-slate-900"
         }`}
       >
         <p className="text-sm sm:text-base">{message}</p>

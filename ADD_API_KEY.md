@@ -1,4 +1,10 @@
-# How to Add HuggingFace API Key to Vercel
+# Hugging Face API key — not required for Phase A
+
+AskJosh does not call Hugging Face during the stabilization and stakeholder-polish phase. Do not add or enable a paid AI service for this build.
+
+The instructions below are retained only as historical notes and should not be followed unless a later implementation is explicitly approved.
+
+## Historical instructions
 
 ## Option 1: Via Vercel Dashboard (Recommended)
 
