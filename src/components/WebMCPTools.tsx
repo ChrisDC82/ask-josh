@@ -3,8 +3,11 @@
 import { useEffect } from "react";
 import {
   FIND_MAINTENANCE_SERVICES_TOOL_NAME,
+  GET_MAINTENANCE_SERVICE_DETAILS_TOOL_NAME,
   findMaintenanceServices,
   findMaintenanceServicesInputSchema,
+  getMaintenanceServiceDetails,
+  getMaintenanceServiceDetailsInputSchema,
 } from "@/lib/webMcpMaintenanceServices";
 
 export default function WebMCPTools() {
@@ -32,6 +35,26 @@ export default function WebMCPTools() {
       )
       .catch(() => {
         // WebMCP is experimental; unsupported or policy-blocked browsers should keep the normal site quiet.
+      });
+
+    void modelContext
+      .registerTool(
+        {
+          name: GET_MAINTENANCE_SERVICE_DETAILS_TOOL_NAME,
+          title: "Get maintenance service details",
+          description:
+            "Retrieve structured public details for one specific AskJosh maintenance service. Use after find_maintenance_services when the user asks for more information about a returned service_id. Results are grounded in the current public La Brea catalogue, and cost ranges are indicative rather than quotes.",
+          inputSchema: getMaintenanceServiceDetailsInputSchema,
+          annotations: {
+            readOnlyHint: true,
+            untrustedContentHint: false,
+          },
+          execute: async (input) => getMaintenanceServiceDetails(input),
+        },
+        { signal: controller.signal },
+      )
+      .catch(() => {
+        // Keep unsupported WebMCP environments silent while preserving normal site behavior.
       });
 
     return () => controller.abort();

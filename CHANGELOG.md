@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-08-28 - AskJosh Phase C Details Tool
+
+Added a read-only WebMCP service-details tool.
+
+- Registered `get_maintenance_service_details` alongside `find_maintenance_services`.
+- Reused the existing public AskJosh catalogue and service IDs returned by discovery.
+- Added exact service-ID lookup with safe blank and not-found responses.
+- Returned structured public service details, indicative estimate language, and public contact actions with verification notes.
+- Added tests for valid details lookup, unknown IDs, blank IDs, exact matching, public fields, estimate language, privacy boundaries, and search-to-details flow.
+
+No planning tool, quote submission tool, write action, AI call, or external MCP server is included.
+
 ## 2026-08-28 - AskJosh Phase B Foundation
 
 Added the initial read-only WebMCP foundation without changing normal website behavior.

@@ -1,5 +1,26 @@
 # Releases
 
+## AskJosh — Phase C: Service Details WebMCP Tool
+
+Status: completed
+
+Purpose: add grounded exact service lookup to the read-only AskJosh WebMCP workflow.
+
+Major verified improvements:
+
+- Implemented `get_maintenance_service_details` as a read-only WebMCP site tool.
+- Grounded every lookup in an exact stable service ID from the current public AskJosh catalogue.
+- Integrated the tool with service IDs returned by `find_maintenance_services`.
+- Returned structured public catalogue details while preserving contact-verification warnings.
+- Verified the localhost WebMCP search-to-details flow.
+- Added focused behavior, privacy, and workflow tests; 25/25 tests passed.
+
+Notes:
+
+- No consequential or write WebMCP actions were added.
+- No AI model/API calls were added.
+- Post-deployment WebMCP verification is still required.
+
 ## AskJosh — Phase B: WebMCP Foundation
 
 Status: completed

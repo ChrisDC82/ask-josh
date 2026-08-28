@@ -59,13 +59,18 @@ The OpenAI and Hugging Face packages are not used by the Phase A application. No
 
 ## WebMCP foundation
 
-Phase B adds one read-only WebMCP site tool: `find_maintenance_services`.
+Phase C currently exposes two read-only WebMCP site tools:
 
-The tool searches the same public La Brea maintenance catalogue used by the normal website. It accepts a required `query`, optional `location`, and optional bounded `limit`, then returns grounded service matches with public service fields and indicative, non-binding cost ranges.
+- `find_maintenance_services`
+- `get_maintenance_service_details`
+
+`find_maintenance_services` searches the same public La Brea maintenance catalogue used by the normal website. It accepts a required `query`, optional `location`, and optional bounded `limit`, then returns grounded service matches with public service fields and indicative, non-binding cost ranges.
+
+`get_maintenance_service_details` accepts a stable `service_id` returned by `find_maintenance_services` and returns structured public details for that specific service.
 
 Normal browser use does not depend on WebMCP. Browsers without `document.modelContext` continue to render and search the site normally, with no visible WebMCP failure state.
 
-To test live discovery, open the homepage in ChatGPT's in-app browser with site tools enabled, or in a compatible Chrome environment with WebMCP support enabled. The site tools menu should expose `find_maintenance_services`. Later tools such as detailed service lookup, maintenance plans, quote submission, and write actions are not implemented yet.
+To test live discovery, open the homepage in ChatGPT's in-app browser with site tools enabled, or in a compatible Chrome environment with WebMCP support enabled. The site tools menu should expose both tools. Later tools such as maintenance plans, quote submission, and write actions are not implemented yet.
 
 ## Repository note
 

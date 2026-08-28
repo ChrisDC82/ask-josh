@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   FIND_MAINTENANCE_SERVICES_MAX_LIMIT,
   findMaintenanceServices,
+  getMaintenanceServiceDetails,
 } from "./webMcpMaintenanceServices.ts";
 
 const privateFields = [
@@ -84,4 +85,74 @@ test("find_maintenance_services returns structured public fields only", () => {
   for (const field of privateFields) {
     assert.equal(Object.hasOwn(service, field), false, `${field} should not be exposed`);
   }
+});
+
+test("get_maintenance_service_details returns the plumbing service by exact ID", () => {
+  const result = getMaintenanceServiceDetails({ service_id: "askjosh-service-2" });
+  assert.equal(result.success, true);
+  assert.equal(result.reason, "details_found");
+  assert.equal(result.service_id, "askjosh-service-2");
+  assert.equal(result.category, "Plumbing");
+});
+
+test("get_maintenance_service_details returns the electrical service by exact ID", () => {
+  const result = getMaintenanceServiceDetails({ service_id: "askjosh-service-3" });
+  assert.equal(result.success, true);
+  assert.equal(result.category, "Electrical repairs");
+});
+
+test("get_maintenance_service_details handles unknown service IDs", () => {
+  const result = getMaintenanceServiceDetails({ service_id: "askjosh-service-999" });
+  assert.equal(result.success, false);
+  assert.equal(result.reason, "not_found");
+  assert.equal(result.category, "");
+});
+
+test("get_maintenance_service_details handles blank service IDs", () => {
+  const result = getMaintenanceServiceDetails({ service_id: "   " });
+  assert.equal(result.success, false);
+  assert.equal(result.reason, "service_id_required");
+  assert.equal(result.available_contact_actions.length, 0);
+});
+
+test("get_maintenance_service_details does not use ambiguous matching", () => {
+  const result = getMaintenanceServiceDetails({ service_id: "Plumbing" });
+  assert.equal(result.success, false);
+  assert.equal(result.reason, "not_found");
+});
+
+test("get_maintenance_service_details returns expected public fields and indicative language", () => {
+  const result = getMaintenanceServiceDetails({ service_id: "askjosh-service-2" });
+
+  assert.equal(typeof result.provider_name, "string");
+  assert.equal(typeof result.description, "string");
+  assert.equal(typeof result.typical_service, "string");
+  assert.equal(typeof result.estimated_cost_range, "string");
+  assert.equal(result.supported_location, "La Brea");
+  assert.match(result.estimate_note, /Indicative range only/);
+  assert.match(result.contact_verification_note, /pending owner verification/);
+  assert.deepEqual(
+    result.available_contact_actions.map((action) => action.type),
+    ["phone", "email", "quote_email_draft"],
+  );
+});
+
+test("get_maintenance_service_details exposes no admin, env, or internal-only fields", () => {
+  const result = getMaintenanceServiceDetails({ service_id: "askjosh-service-2" });
+  const serialized = JSON.stringify(result);
+
+  assert.equal(/SUPABASE|SERVICE_ROLE|ADMIN_PASSWORD|ADMIN_SESSION/.test(serialized), false);
+  for (const field of ["id", "keywords", "call_to_action"]) {
+    assert.equal(Object.hasOwn(result, field), false, `${field} should not be exposed`);
+  }
+});
+
+test("find_maintenance_services service IDs feed get_maintenance_service_details", () => {
+  const search = findMaintenanceServices({ query: "leaking pipe", location: "La Brea" });
+  const serviceId = search.results[0]?.service_id;
+
+  assert.equal(serviceId, "askjosh-service-2");
+  const details = getMaintenanceServiceDetails({ service_id: serviceId });
+  assert.equal(details.success, true);
+  assert.equal(details.category, search.results[0]?.category);
 });
