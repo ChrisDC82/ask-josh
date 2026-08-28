@@ -1,5 +1,27 @@
 # Releases
 
+## AskJosh — Phase D: Property Maintenance Planning WebMCP
+
+Status: completed
+
+Purpose: add a grounded multi-service planning flow to the read-only AskJosh WebMCP workflow.
+
+Major verified improvements:
+
+- Implemented `build_property_maintenance_plan` as a read-only WebMCP site tool.
+- Grounded every planned item in exact service IDs from the public AskJosh catalogue.
+- Added deterministic maintenance sequencing and deterministic indicative cost aggregation.
+- Handled invalid and duplicate service IDs explicitly without inventing substitutes.
+- Rejected unsupported locations.
+- Verified the full local community-centre WebMCP chain.
+- Added focused planner behavior, grounding, privacy, cost, and workflow tests; 42/42 tests passed.
+
+Notes:
+
+- No AI model/API calls were added.
+- No booking, provider contact, write, storage, or quote-submission actions were added.
+- Deployed WebMCP verification is still required.
+
 ## AskJosh — Phase C: Service Details WebMCP Tool
 
 Status: completed

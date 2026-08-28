@@ -59,18 +59,27 @@ The OpenAI and Hugging Face packages are not used by the Phase A application. No
 
 ## WebMCP foundation
 
-Phase C currently exposes two read-only WebMCP site tools:
+The current application exposes three read-only WebMCP site tools:
 
 - `find_maintenance_services`
 - `get_maintenance_service_details`
+- `build_property_maintenance_plan`
 
 `find_maintenance_services` searches the same public La Brea maintenance catalogue used by the normal website. It accepts a required `query`, optional `location`, and optional bounded `limit`, then returns grounded service matches with public service fields and indicative, non-binding cost ranges.
 
 `get_maintenance_service_details` accepts a stable `service_id` returned by `find_maintenance_services` and returns structured public details for that specific service.
 
+`build_property_maintenance_plan` accepts one to five exact service IDs and creates a deterministic draft plan. Every item remains grounded in the public catalogue. Combined cost ranges are calculated only from safely parsed catalogue estimates, remain indicative and non-binding, and are not quotes. The tool does not book work, contact a provider, store the plan, or establish provider availability.
+
 Normal browser use does not depend on WebMCP. Browsers without `document.modelContext` continue to render and search the site normally, with no visible WebMCP failure state.
 
-To test live discovery, open the homepage in ChatGPT's in-app browser with site tools enabled, or in a compatible Chrome environment with WebMCP support enabled. The site tools menu should expose both tools. Later tools such as maintenance plans, quote submission, and write actions are not implemented yet.
+To test live discovery, open the homepage in ChatGPT's in-app browser with site tools enabled, or in a compatible Chrome environment with WebMCP support enabled. The site tools menu should expose all three tools. Quote submission and other write actions are not implemented.
+
+### Developer demo chain
+
+Example request: “We're preparing a community centre in La Brea. Find services for AC servicing, electrical checks, pressure washing and lawn care, then build a maintenance plan.”
+
+Use `find_maintenance_services` for each need, optionally call `get_maintenance_service_details` for returned IDs, then pass the selected exact IDs to `build_property_maintenance_plan`. The result is a catalogue-grounded draft for review, not a booking or quote.
 
 ## Repository note
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-08-28 - AskJosh Phase D Property Maintenance Plan Tool
+
+Added a read-only WebMCP planning tool.
+
+- Registered `build_property_maintenance_plan` beside the existing discovery and details tools.
+- Added exact validation for one to five catalogue service IDs, duplicate handling, and structured partial results for invalid IDs.
+- Added deterministic service sequencing using transparent category rules.
+- Added safe aggregation of strictly parsed public catalogue cost ranges with non-binding estimate warnings and explicit exclusions.
+- Kept project summary and priority as display context without treating either as a property, safety, emergency, or availability fact.
+- Added a developer demo chain and focused planner behavior, privacy, grounding, cost, and regression tests.
+
+No booking, quote submission, contact transmission, storage, AI/API call, or other write action is included.
+
 ## 2026-08-28 - AskJosh Phase C Details Tool
 
 Added a read-only WebMCP service-details tool.
